@@ -9,6 +9,7 @@ package com.streamlink.android
  */
 object Config {
     const val SERVER_URL = "https://streamlink-server.onrender.com"
+    const val UPDATE_SERVER_URL = "https://streamlink-android-server.onrender.com"
 
     // Screen capture target (host side). Device resolution ke hisaab se auto-scale
     // hota hai; yeh sirf upper cap hai taaki bandwidth theek rahe.
