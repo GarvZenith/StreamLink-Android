@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: streamlink-android-server
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
-    autoDeploy: true

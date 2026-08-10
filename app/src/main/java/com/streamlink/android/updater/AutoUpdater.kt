@@ -35,7 +35,7 @@ object AutoUpdater {
     fun checkForUpdate(context: Context, silent: Boolean = true) {
         thread {
             try {
-                val conn = (URL(Config.UPDATE_SERVER_URL + "/api/version").openConnection() as HttpURLConnection).apply {
+                val conn = (URL(Config.SERVER_URL + "/api/version").openConnection() as HttpURLConnection).apply {
                     connectTimeout = 6000
                     readTimeout = 6000
                 }
