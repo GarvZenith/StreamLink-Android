@@ -13,7 +13,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.streamlink.android.databinding.ActivityHostBinding
 import com.streamlink.android.host.ScreenCaptureService
 import com.streamlink.android.input.InputController
+import com.streamlink.android.input.RemoteInputAccessibilityService
+import com.streamlink.android.input.ShizukuInjector
 import com.streamlink.android.signaling.SignalingClient
+import com.streamlink.android.util.DeviceIdentity
 import com.streamlink.android.webrtc.FileTransfer
 import com.streamlink.android.webrtc.WebRtcClient
 import com.streamlink.android.webrtc.WebRtcCore
@@ -22,10 +25,6 @@ import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.SessionDescription
 import org.webrtc.VideoTrack
-
-import com.streamlink.android.input.RemoteInputAccessibilityService
-import com.streamlink.android.input.ShizukuInjector
-import com.streamlink.android.util.DeviceIdentity
 
 class HostActivity : AppCompatActivity(), SignalingClient.Listener {
 
@@ -68,7 +67,13 @@ class HostActivity : AppCompatActivity(), SignalingClient.Listener {
             finish()
         }
 
-        requestScreenCapturePermission()
+        // If screen capture is already running (re-opened activity), reuse existing track
+        if (ScreenCaptureService.currentVideoTrack != null) {
+            localTrack = ScreenCaptureService.currentVideoTrack
+            startSignaling()
+        } else {
+            requestScreenCapturePermission()
+        }
     }
 
     private fun checkControlPermissions() {
@@ -166,7 +171,7 @@ class HostActivity : AppCompatActivity(), SignalingClient.Listener {
     override fun onViewerDisconnected(viewerId: String) {
         if (viewerId == activeViewerId) {
             runOnUiThread {
-                binding.tvStatus.text = "Viewer disconnected. Waiting for new connection..."
+                binding.tvStatus.text = "Remote viewer disconnected. Waiting for new connection..."
                 webRtcClient?.close()
                 webRtcClient = null
             }
@@ -177,14 +182,22 @@ class HostActivity : AppCompatActivity(), SignalingClient.Listener {
         inputController?.handle(eventData)
     }
 
+    /** Pressing Back minimizes the app to background so screen sharing STAYS ALIVE. */
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        moveTaskToBack(true)
+    }
+
+    /** Explicitly stop screen capture and close connection when 'Stop Sharing' is clicked. */
     private fun stopSharing() {
         webRtcClient?.close()
         signaling?.disconnect()
         ScreenCaptureService.stop(this)
+        binding.tvStatus.text = "Sharing Stopped"
     }
 
     override fun onDestroy() {
-        stopSharing()
+        // Do NOT stop screen capture service on activity destroy (allows background sharing)
         super.onDestroy()
     }
 }
