@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">StreamLink</string>
+    <string name="accessibility_desc">StreamLink Remote Input Service for controlling device screen remotely.</string>
+</resources>
