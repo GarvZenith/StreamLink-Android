@@ -20,8 +20,8 @@ class RemoteInputAccessibilityService : AccessibilityService() {
     override fun onDestroy() { if (instance === this) instance = null; super.onDestroy() }
 
     fun tap(x: Float, y: Float) {
-        val path = Path().apply { moveTo(x, y); lineTo(x + 1f, y + 1f) }
-        dispatch(path, 0, 40)
+        val path = Path().apply { moveTo(x, y) }
+        dispatch(path, 0, 50)
     }
 
     fun swipe(x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long) {

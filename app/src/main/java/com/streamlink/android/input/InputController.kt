@@ -25,8 +25,8 @@ class InputController(
     private var moved = false
     private var lastTapTime = 0L
 
-    private val tapSlop = 16f
-    private val tapMaxMs = 450L
+    private val tapSlop = 48f
+    private val tapMaxMs = 500L
 
     private fun useShizuku() = ShizukuInjector.isAvailable()
     private fun acc() = RemoteInputAccessibilityService.instance
@@ -55,7 +55,8 @@ class InputController(
     private fun onMove(x: Float, y: Float) {
         if (!pressed) return
         lastX = x; lastY = y
-        if (hypot((x - startX).toDouble(), (y - startY).toDouble()) > tapSlop) moved = true
+        val dist = hypot((x - startX).toDouble(), (y - startY).toDouble()).toFloat()
+        if (dist > tapSlop) moved = true
     }
 
     private fun onUp(x: Float, y: Float) {
@@ -64,10 +65,14 @@ class InputController(
         val ex = if (x > 0f || y > 0f) x else lastX
         val ey = if (x > 0f || y > 0f) y else lastY
         val dt = System.currentTimeMillis() - downTime
-        if (!moved && dt < tapMaxMs) {
+        val dist = hypot((ex - startX).toDouble(), (ey - startY).toDouble()).toFloat()
+
+        if (!moved && dist <= tapSlop) {
             tap(startX, startY)
-        } else if (moved) {
+        } else if (moved && dist > tapSlop) {
             swipe(startX, startY, ex, ey, dt.coerceIn(80, 1200))
+        } else {
+            tap(startX, startY)
         }
     }
 
